@@ -147,3 +147,28 @@ export interface ThisWeekSummary {
   isCurrentWeek: boolean;
   nextWeek?: Week;
 }
+
+// Verse types for Bible verse auto-linking
+
+export type TranslationCode = 'NIV' | 'KJV' | 'NLT' | 'MSG';
+
+export interface VerseTranslation {
+  translation: TranslationCode;
+  text: string;
+  ok: boolean;
+  error?: string;
+}
+
+export interface CachedVerse {
+  id: string; // osis|translation (e.g., "Rom.8.28|NIV")
+  osis: string; // Partition key
+  translation: TranslationCode;
+  text: string;
+  fetchedAt: string; // ISO date string
+}
+
+export interface VerseResponse {
+  rawRef: string;
+  osis: string;
+  translations: Record<TranslationCode, { ok: boolean; text?: string; error?: string }>;
+}

@@ -8,6 +8,7 @@ export const CONTAINERS = {
   MEALS: 'meals',
   RSVPS: 'rsvps',
   SESSIONS: 'sessions',
+  VERSES: 'verses',
 } as const;
 
 type ContainerName = (typeof CONTAINERS)[keyof typeof CONTAINERS];
@@ -66,6 +67,7 @@ export async function initializeDatabase(): Promise<void> {
     { name: CONTAINERS.MEALS, partitionKey: '/weekId' },
     { name: CONTAINERS.RSVPS, partitionKey: '/weekId' },
     { name: CONTAINERS.SESSIONS, partitionKey: '/weekId' },
+    { name: CONTAINERS.VERSES, partitionKey: '/osis' },
   ];
 
   for (const config of containerConfigs) {

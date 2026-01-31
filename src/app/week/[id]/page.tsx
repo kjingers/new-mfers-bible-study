@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button, Card, CardContent, Badge, Loading } from '@/components/ui';
 import { RSVPForm } from '@/components/rsvp';
 import { MealForm } from '@/components/meal';
+import { VerseText } from '@/components/verse';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/utils';
 import type { WeekWithDetails, RSVP, Meal } from '@/types';
@@ -193,11 +194,11 @@ export default function WeekDetailPage({ params }: PageProps) {
                       </Badge>
                       <div>
                         <p className="font-medium text-stone-900 dark:text-white">
-                          {reading.reference}
+                          <VerseText text={reading.reference} />
                         </p>
                         {reading.description && (
                           <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                            {reading.description}
+                            <VerseText text={reading.description} />
                           </p>
                         )}
                       </div>
@@ -245,7 +246,9 @@ export default function WeekDetailPage({ params }: PageProps) {
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
                         {question.number}
                       </span>
-                      <p className="text-stone-800 dark:text-stone-200">{question.text}</p>
+                      <p className="text-stone-800 dark:text-stone-200">
+                        <VerseText text={question.text} />
+                      </p>
                     </div>
                   </div>
                 ))}
