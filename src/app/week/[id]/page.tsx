@@ -4,9 +4,10 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardContent, Badge, Loading } from '@/components/ui';
+import { RSVPForm } from '@/components/rsvp';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/utils';
-import type { WeekWithDetails } from '@/types';
+import type { WeekWithDetails, RSVP } from '@/types';
 
 interface WeekResponse {
   data: WeekWithDetails | null;
@@ -28,6 +29,10 @@ export default function WeekDetailPage({ params }: PageProps) {
   const [nextWeek, setNextWeek] = useState<{ id: string; weekNumber: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRsvpForm, setShowRsvpForm] = useState(false);
+
+  // Find current user's RSVP
+  const currentUserRsvp = weekData?.rsvps.find((r) => r.familyId === family?.id);
 
   useEffect(() => {
     async function fetchWeek() {
@@ -323,15 +328,47 @@ export default function WeekDetailPage({ params }: PageProps) {
             {/* RSVP Button */}
             {isAuthenticated && (
               <div className="mt-4 border-t border-stone-200 pt-4 dark:border-stone-700">
-                <Button className="w-full">
-                  {weekData.rsvps.some((r) => r.familyId === family?.id)
-                    ? 'Update RSVP'
-                    : 'RSVP Now'}
+                <Button className="w-full" onClick={() => setShowRsvpForm(true)}>
+                  {currentUserRsvp ? 'Update RSVP' : 'RSVP Now'}
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* RSVP Form Modal */}
+        {isAuthenticated && weekData && (
+          <RSVPForm
+            isOpen={showRsvpForm}
+            onClose={() => setShowRsvpForm(false)}
+            weekId={weekData.id}
+            existingRsvp={currentUserRsvp}
+            onSuccess={(newRsvp: RSVP) => {
+              // Update the local state with the new/updated RSVP
+              setWeekData((prev) => {
+                if (!prev) return prev;
+                const existingIndex = prev.rsvps.findIndex((r) => r.id === newRsvp.id);
+                const newRsvps =
+                  existingIndex >= 0
+                    ? prev.rsvps.map((r, i) => (i === existingIndex ? newRsvp : r))
+                    : [...prev.rsvps, newRsvp];
+                const totalAdults = newRsvps.reduce((sum, r) => sum + r.adultCount, 0);
+                const totalChildren = newRsvps.reduce((sum, r) => sum + r.childCount, 0);
+                return { ...prev, rsvps: newRsvps, totalAdults, totalChildren };
+              });
+            }}
+            onDelete={() => {
+              // Remove the RSVP from local state
+              setWeekData((prev) => {
+                if (!prev) return prev;
+                const newRsvps = prev.rsvps.filter((r) => r.familyId !== family?.id);
+                const totalAdults = newRsvps.reduce((sum, r) => sum + r.adultCount, 0);
+                const totalChildren = newRsvps.reduce((sum, r) => sum + r.childCount, 0);
+                return { ...prev, rsvps: newRsvps, totalAdults, totalChildren };
+              });
+            }}
+          />
+        )}
 
         {/* Week Navigation */}
         <nav className="flex justify-between gap-4 pb-8" aria-label="Week navigation">
