@@ -1,7 +1,7 @@
 /**
  * @vitest-environment node
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createToken, verifyToken, getTokenFromCookies, AUTH_COOKIE_NAME } from './jwt';
 import type { Family } from '@/types';
 

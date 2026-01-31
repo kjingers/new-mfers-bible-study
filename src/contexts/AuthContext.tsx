@@ -77,9 +77,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Check auth status on mount
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    let isMounted = true;
+
+    const performAuthCheck = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        const data = await response.json();
+
+        if (isMounted) {
+          setState({
+            isAuthenticated: data.authenticated,
+            isLoading: false,
+            family: data.family,
+          });
+        }
+      } catch {
+        if (isMounted) {
+          setState({
+            isAuthenticated: false,
+            isLoading: false,
+            family: null,
+          });
+        }
+      }
+    };
+
+    performAuthCheck();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ ...state, login, logout, checkAuth }}>
