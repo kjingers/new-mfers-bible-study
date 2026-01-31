@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Button, Input, Modal } from '@/components/ui';
+import { useSubmitRSVP, useDeleteRSVP } from '@/hooks';
+import { useAuth } from '@/contexts/AuthContext';
 import type { RSVP } from '@/types';
 
 interface RSVPFormProps {
@@ -9,81 +11,44 @@ interface RSVPFormProps {
   onClose: () => void;
   weekId: string;
   existingRsvp?: RSVP;
-  onSuccess: (rsvp: RSVP) => void;
-  onDelete?: () => void;
 }
 
-export function RSVPForm({
-  isOpen,
-  onClose,
-  weekId,
-  existingRsvp,
-  onSuccess,
-  onDelete,
-}: RSVPFormProps) {
+export function RSVPForm({ isOpen, onClose, weekId, existingRsvp }: RSVPFormProps) {
+  const { family } = useAuth();
+  // Initialize state from props - modal closes between edits so component remounts
   const [adultCount, setAdultCount] = useState(existingRsvp?.adultCount ?? 2);
   const [childCount, setChildCount] = useState(existingRsvp?.childCount ?? 0);
   const [notes, setNotes] = useState(existingRsvp?.notes ?? '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const submitMutation = useSubmitRSVP();
+  const deleteMutation = useDeleteRSVP(weekId, family?.id ?? '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
 
-    try {
-      const response = await fetch('/api/rsvps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          weekId,
-          adultCount,
-          childCount,
-          notes: notes.trim() || undefined,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save RSVP');
+    submitMutation.mutate(
+      {
+        weekId,
+        adultCount,
+        childCount,
+        notes: notes.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+        },
       }
-
-      onSuccess(data.data);
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const handleDelete = async () => {
-    if (!existingRsvp || !onDelete) return;
+    if (!existingRsvp) return;
 
-    setError(null);
-    setIsDeleting(true);
-
-    try {
-      const response = await fetch(`/api/rsvps?weekId=${weekId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete RSVP');
-      }
-
-      onDelete();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(existingRsvp.id, {
+      onSuccess: () => {
+        onClose();
+      },
+    });
   };
 
   const handleCountChange = (
@@ -94,6 +59,9 @@ export function RSVPForm({
     const newValue = Math.max(0, currentValue + delta);
     setter(newValue);
   };
+
+  const isSubmitting = submitMutation.isPending;
+  const isDeleting = deleteMutation.isPending;
 
   return (
     <Modal
@@ -166,16 +134,9 @@ export function RSVPForm({
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        {/* Error Message */}
-        {error && (
-          <p className="text-sm text-red-500" role="alert">
-            {error}
-          </p>
-        )}
-
         {/* Actions */}
         <div className="flex gap-3">
-          {existingRsvp && onDelete && (
+          {existingRsvp && (
             <Button
               type="button"
               variant="danger"

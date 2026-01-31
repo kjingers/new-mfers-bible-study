@@ -1,22 +1,15 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button, Card, CardContent, Badge, Loading } from '@/components/ui';
+import { Button, Card, CardContent, Badge, SkeletonWeekDetail } from '@/components/ui';
 import { RSVPForm } from '@/components/rsvp';
 import { MealForm } from '@/components/meal';
 import { VerseText } from '@/components/verse';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWeek } from '@/hooks';
 import { formatDate } from '@/lib/utils';
-import type { WeekWithDetails, RSVP, Meal } from '@/types';
-
-interface WeekResponse {
-  data: WeekWithDetails | null;
-  prevWeek: { id: string; weekNumber: number } | null;
-  nextWeek: { id: string; weekNumber: number } | null;
-  error?: string;
-}
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,13 +19,13 @@ export default function WeekDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
   const { isAuthenticated, family } = useAuth();
-  const [weekData, setWeekData] = useState<WeekWithDetails | null>(null);
-  const [prevWeek, setPrevWeek] = useState<{ id: string; weekNumber: number } | null>(null);
-  const [nextWeek, setNextWeek] = useState<{ id: string; weekNumber: number } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: weekResponse, isLoading, error } = useWeek(id);
   const [showRsvpForm, setShowRsvpForm] = useState(false);
   const [showMealForm, setShowMealForm] = useState(false);
+
+  const weekData = weekResponse?.data;
+  const prevWeek = weekResponse?.prevWeek;
+  const nextWeek = weekResponse?.nextWeek;
 
   // Find current user's RSVP
   const currentUserRsvp = weekData?.rsvps.find((r) => r.familyId === family?.id);
@@ -40,36 +33,10 @@ export default function WeekDetailPage({ params }: PageProps) {
   // Check if current user owns the meal signup
   const isMealOwner = weekData?.meal?.familyId === family?.id;
 
-  useEffect(() => {
-    async function fetchWeek() {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/weeks/${id}`);
-        const data: WeekResponse = await response.json();
-
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setWeekData(data.data);
-          setPrevWeek(data.prevWeek);
-          setNextWeek(data.nextWeek);
-        }
-      } catch {
-        setError('Failed to load week content');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchWeek();
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="min-h-screen bg-stone-50 dark:bg-stone-900">
-        <div className="flex min-h-screen items-center justify-center">
-          <Loading message="Loading week..." />
-        </div>
+        <SkeletonWeekDetail />
       </main>
     );
   }
@@ -80,7 +47,9 @@ export default function WeekDetailPage({ params }: PageProps) {
         <div className="mx-auto max-w-2xl p-4">
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-red-600 dark:text-red-400">{error || 'Week not found'}</p>
+              <p className="text-red-600 dark:text-red-400">
+                {error instanceof Error ? error.message : 'Week not found'}
+              </p>
               <Link href="/home">
                 <Button className="mt-4">Back to Home</Button>
               </Link>
@@ -370,30 +339,6 @@ export default function WeekDetailPage({ params }: PageProps) {
             onClose={() => setShowRsvpForm(false)}
             weekId={weekData.id}
             existingRsvp={currentUserRsvp}
-            onSuccess={(newRsvp: RSVP) => {
-              // Update the local state with the new/updated RSVP
-              setWeekData((prev) => {
-                if (!prev) return prev;
-                const existingIndex = prev.rsvps.findIndex((r) => r.id === newRsvp.id);
-                const newRsvps =
-                  existingIndex >= 0
-                    ? prev.rsvps.map((r, i) => (i === existingIndex ? newRsvp : r))
-                    : [...prev.rsvps, newRsvp];
-                const totalAdults = newRsvps.reduce((sum, r) => sum + r.adultCount, 0);
-                const totalChildren = newRsvps.reduce((sum, r) => sum + r.childCount, 0);
-                return { ...prev, rsvps: newRsvps, totalAdults, totalChildren };
-              });
-            }}
-            onDelete={() => {
-              // Remove the RSVP from local state
-              setWeekData((prev) => {
-                if (!prev) return prev;
-                const newRsvps = prev.rsvps.filter((r) => r.familyId !== family?.id);
-                const totalAdults = newRsvps.reduce((sum, r) => sum + r.adultCount, 0);
-                const totalChildren = newRsvps.reduce((sum, r) => sum + r.childCount, 0);
-                return { ...prev, rsvps: newRsvps, totalAdults, totalChildren };
-              });
-            }}
           />
         )}
 
@@ -405,20 +350,6 @@ export default function WeekDetailPage({ params }: PageProps) {
             weekId={weekData.id}
             existingMeal={weekData.meal}
             isOwner={isMealOwner}
-            onSuccess={(newMeal: Meal) => {
-              // Update the local state with the new/updated meal
-              setWeekData((prev) => {
-                if (!prev) return prev;
-                return { ...prev, meal: newMeal };
-              });
-            }}
-            onDelete={() => {
-              // Remove the meal from local state
-              setWeekData((prev) => {
-                if (!prev) return prev;
-                return { ...prev, meal: undefined };
-              });
-            }}
           />
         )}
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Input, Modal } from '@/components/ui';
+import { useSubmitMeal, useDeleteMeal } from '@/hooks';
 import type { Meal } from '@/types';
 
 interface MealFormProps {
@@ -10,85 +11,47 @@ interface MealFormProps {
   weekId: string;
   existingMeal?: Meal;
   isOwner: boolean; // Whether the current user owns this meal signup
-  onSuccess: (meal: Meal) => void;
-  onDelete?: () => void;
 }
 
-export function MealForm({
-  isOpen,
-  onClose,
-  weekId,
-  existingMeal,
-  isOwner,
-  onSuccess,
-  onDelete,
-}: MealFormProps) {
+export function MealForm({ isOpen, onClose, weekId, existingMeal, isOwner }: MealFormProps) {
+  // Initialize state from props - modal closes between edits so component remounts
   const [description, setDescription] = useState(existingMeal?.description ?? '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const submitMutation = useSubmitMeal();
+  const deleteMutation = useDeleteMeal(weekId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!description.trim()) {
-      setError("Please describe what you'll be bringing");
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('/api/meals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          weekId,
-          description: description.trim(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save meal signup');
+    submitMutation.mutate(
+      {
+        weekId,
+        description: description.trim(),
+      },
+      {
+        onSuccess: () => {
+          onClose();
+        },
       }
-
-      onSuccess(data.data);
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const handleDelete = async () => {
-    if (!existingMeal || !onDelete) return;
+    if (!existingMeal) return;
 
-    setError(null);
-    setIsDeleting(true);
-
-    try {
-      const response = await fetch(`/api/meals?weekId=${weekId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel meal signup');
-      }
-
-      onDelete();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(existingMeal.id, {
+      onSuccess: () => {
+        onClose();
+      },
+    });
   };
+
+  const isSubmitting = submitMutation.isPending;
+  const isDeleting = deleteMutation.isPending;
 
   // If there's an existing meal and current user is not the owner, don't show form
   if (existingMeal && !isOwner) {
@@ -140,22 +103,15 @@ export function MealForm({
             💡 Tips for a great meal:
           </p>
           <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-300">
-            <li>• Plan for {'{attendees}'} people based on RSVPs</li>
+            <li>• Plan for the expected attendees based on RSVPs</li>
             <li>• Kid-friendly options are always appreciated</li>
             <li>• Check for dietary restrictions with the group</li>
           </ul>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <p className="text-sm text-red-500" role="alert">
-            {error}
-          </p>
-        )}
-
         {/* Actions */}
         <div className="flex gap-3">
-          {existingMeal && isOwner && onDelete && (
+          {existingMeal && isOwner && (
             <Button
               type="button"
               variant="danger"
