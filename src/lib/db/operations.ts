@@ -191,6 +191,17 @@ export const families = {
     ]);
     return results[0] || null;
   },
+
+  getByCode: async (code: string): Promise<Family | null> => {
+    // Case-insensitive code lookup
+    const normalizedCode = code.toUpperCase().trim();
+    const results = await query<Family>(
+      CONTAINERS.FAMILIES,
+      'SELECT * FROM c WHERE UPPER(c.code) = @p0',
+      [normalizedCode]
+    );
+    return results[0] || null;
+  },
 };
 
 // Meal operations

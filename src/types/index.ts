@@ -55,9 +55,34 @@ export interface Question {
 export interface Family {
   id: string;
   name: string;
+  code: string; // Unique family code for login (e.g., "SMITH2024")
   members: string[]; // Names of family members
   isAdmin: boolean;
   createdAt: string;
+}
+
+/**
+ * JWT payload for authenticated users.
+ */
+export interface AuthPayload {
+  familyId: string;
+  familyName: string;
+  isAdmin: boolean;
+  iat: number;
+  exp: number;
+}
+
+/**
+ * Auth state for client-side context.
+ */
+export interface AuthState {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  family: {
+    id: string;
+    name: string;
+    isAdmin: boolean;
+  } | null;
 }
 
 /**

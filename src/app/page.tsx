@@ -1,6 +1,7 @@
+import Link from 'next/link';
 import { Button } from '@/components/ui';
 
-export default function Home() {
+export default function LandingPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md text-center">
@@ -26,14 +27,21 @@ export default function Home() {
         <h1 className="mb-2 text-3xl font-bold text-stone-900 dark:text-white">
           Tuesday Bible Study
         </h1>
-        <p className="mb-8 text-stone-600 dark:text-stone-400">
-          Welcome to our weekly gathering
-        </p>
+        <p className="mb-8 text-stone-600 dark:text-stone-400">Welcome to our weekly gathering</p>
 
-        {/* Action Button */}
-        <Button size="lg" className="w-full">
-          Enter with Family Code
-        </Button>
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Link href="/home" className="block">
+            <Button size="lg" className="w-full">
+              Enter as Guest
+            </Button>
+          </Link>
+          <Link href="/login" className="block">
+            <Button size="lg" variant="secondary" className="w-full">
+              Sign In with Family Code
+            </Button>
+          </Link>
+        </div>
 
         {/* Status */}
         <div className="mt-8 rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
@@ -46,9 +54,7 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-xs text-stone-400">
-          Made with love for Tuesday nights
-        </p>
+        <p className="mt-8 text-xs text-stone-400">Made with love for Tuesday nights</p>
       </div>
     </main>
   );

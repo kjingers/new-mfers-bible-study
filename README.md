@@ -2,21 +2,24 @@
 
 A mobile-first web application for a small group Bible study that meets every Tuesday.
 
+**Live App**: [https://yellow-ocean-073d4ae0f.4.azurestaticapps.net](https://yellow-ocean-073d4ae0f.4.azurestaticapps.net)
+
 ## Features
 
 - 📖 **Weekly Content**: View reading assignments and discussion questions
 - 🔴 **Live Session**: Real-time question sync during meetings
 - 🍽️ **Meal Coordination**: Sign up to bring food and RSVP
-- 👨‍👩‍👧‍👦 **Family-based Auth**: Simple family codes for easy access
+- 👨‍👩‍👧‍👦 **Family-based Auth**: Simple family codes for easy access (guest mode available for read-only access)
 - 📱 **Mobile-first**: Designed for phones, works on desktop
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Frontend**: Next.js 16 (App Router), TypeScript, Tailwind CSS v4
 - **Backend**: Next.js API Routes
 - **Database**: Azure Cosmos DB
 - **Real-time**: Azure SignalR Service
 - **Hosting**: Azure Static Web Apps
+- **Auth**: JWT-based with jose library
 
 ## Quick Start
 
