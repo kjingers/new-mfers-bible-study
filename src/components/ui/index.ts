@@ -25,3 +25,4 @@ export {
 } from './Skeleton';
 export { BottomNav } from './BottomNav';
 export { ThemeToggle } from './ThemeToggle';
+export { Collapsible } from './Collapsible';
