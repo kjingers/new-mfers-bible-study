@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardContent, Badge, Loading } from '@/components/ui';
 import { RSVPForm } from '@/components/rsvp';
+import { MealForm } from '@/components/meal';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/utils';
-import type { WeekWithDetails, RSVP } from '@/types';
+import type { WeekWithDetails, RSVP, Meal } from '@/types';
 
 interface WeekResponse {
   data: WeekWithDetails | null;
@@ -30,9 +31,13 @@ export default function WeekDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showRsvpForm, setShowRsvpForm] = useState(false);
+  const [showMealForm, setShowMealForm] = useState(false);
 
   // Find current user's RSVP
   const currentUserRsvp = weekData?.rsvps.find((r) => r.familyId === family?.id);
+
+  // Check if current user owns the meal signup
+  const isMealOwner = weekData?.meal?.familyId === family?.id;
 
   useEffect(() => {
     async function fetchWeek() {
@@ -286,23 +291,42 @@ export default function WeekDetailPage({ params }: PageProps) {
             {/* Meal Info */}
             {weekData.meal ? (
               <div className="rounded-lg bg-orange-50 p-4 dark:bg-orange-900/20">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🍽️</span>
-                  <div>
-                    <p className="font-medium text-stone-900 dark:text-white">
-                      {weekData.meal.familyName} is bringing the meal
-                    </p>
-                    <p className="text-sm text-stone-600 dark:text-stone-400">
-                      {weekData.meal.description}
-                    </p>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl" aria-hidden="true">
+                      🍽️
+                    </span>
+                    <div>
+                      <p className="font-medium text-stone-900 dark:text-white">
+                        {weekData.meal.familyName} is bringing the meal
+                      </p>
+                      <p className="text-sm text-stone-600 dark:text-stone-400">
+                        {weekData.meal.description}
+                      </p>
+                    </div>
                   </div>
+                  {isAuthenticated && isMealOwner && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => setShowMealForm(true)}
+                      aria-label="Edit your meal signup"
+                    >
+                      Edit
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (
               <div className="rounded-lg border-2 border-dashed border-stone-300 p-4 text-center dark:border-stone-600">
                 <p className="text-stone-500 dark:text-stone-400">No meal signed up yet</p>
                 {isAuthenticated && (
-                  <Button size="sm" variant="secondary" className="mt-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="mt-2"
+                    onClick={() => setShowMealForm(true)}
+                  >
                     Sign Up to Bring Meal
                   </Button>
                 )}
@@ -365,6 +389,31 @@ export default function WeekDetailPage({ params }: PageProps) {
                 const totalAdults = newRsvps.reduce((sum, r) => sum + r.adultCount, 0);
                 const totalChildren = newRsvps.reduce((sum, r) => sum + r.childCount, 0);
                 return { ...prev, rsvps: newRsvps, totalAdults, totalChildren };
+              });
+            }}
+          />
+        )}
+
+        {/* Meal Form Modal */}
+        {isAuthenticated && weekData && (
+          <MealForm
+            isOpen={showMealForm}
+            onClose={() => setShowMealForm(false)}
+            weekId={weekData.id}
+            existingMeal={weekData.meal}
+            isOwner={isMealOwner}
+            onSuccess={(newMeal: Meal) => {
+              // Update the local state with the new/updated meal
+              setWeekData((prev) => {
+                if (!prev) return prev;
+                return { ...prev, meal: newMeal };
+              });
+            }}
+            onDelete={() => {
+              // Remove the meal from local state
+              setWeekData((prev) => {
+                if (!prev) return prev;
+                return { ...prev, meal: undefined };
               });
             }}
           />
