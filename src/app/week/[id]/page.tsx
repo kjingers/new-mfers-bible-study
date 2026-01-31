@@ -87,9 +87,16 @@ export default function WeekDetailPage({ params }: PageProps) {
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-1 text-stone-600 dark:text-stone-400"
+            className="flex min-h-[44px] min-w-[44px] items-center gap-1 rounded-lg p-2 text-stone-600 transition-colors hover:bg-stone-100 active:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-800 dark:active:bg-stone-700"
+            aria-label="Go back to previous page"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -143,12 +150,16 @@ export default function WeekDetailPage({ params }: PageProps) {
           <Card>
             <CardContent className="p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-stone-900 dark:text-white">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30"
+                  aria-hidden="true"
+                >
                   <svg
                     className="h-4 w-4 text-amber-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -193,12 +204,16 @@ export default function WeekDetailPage({ params }: PageProps) {
           <Card>
             <CardContent className="p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-stone-900 dark:text-white">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30"
+                  aria-hidden="true"
+                >
                   <svg
                     className="h-4 w-4 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -319,11 +334,17 @@ export default function WeekDetailPage({ params }: PageProps) {
         </Card>
 
         {/* Week Navigation */}
-        <div className="flex justify-between gap-4 pb-8">
+        <nav className="flex justify-between gap-4 pb-8" aria-label="Week navigation">
           {prevWeek ? (
             <Link href={`/week/${prevWeek.id}`} className="flex-1">
-              <Button variant="secondary" className="w-full">
-                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Button variant="secondary" className="w-full min-h-[44px]">
+                <svg
+                  className="mr-2 h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -339,9 +360,15 @@ export default function WeekDetailPage({ params }: PageProps) {
           )}
           {nextWeek ? (
             <Link href={`/week/${nextWeek.id}`} className="flex-1">
-              <Button variant="secondary" className="w-full">
+              <Button variant="secondary" className="w-full min-h-[44px]">
                 Week {nextWeek.weekNumber}
-                <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="ml-2 h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -354,7 +381,7 @@ export default function WeekDetailPage({ params }: PageProps) {
           ) : (
             <div className="flex-1" />
           )}
-        </div>
+        </nav>
       </div>
     </main>
   );
