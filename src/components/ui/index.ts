@@ -23,3 +23,5 @@ export {
   SkeletonWeekDetail,
   SkeletonHome,
 } from './Skeleton';
+export { BottomNav } from './BottomNav';
+export { ThemeToggle } from './ThemeToggle';

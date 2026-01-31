@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Button, Card, CardContent, Badge, SkeletonHome } from '@/components/ui';
+import { Button, Card, CardContent, Badge, SkeletonHome, ThemeToggle } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrentWeek } from '@/hooks';
 import { formatDate } from '@/lib/utils';
@@ -20,6 +20,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <h1 className="text-lg font-bold text-stone-900 dark:text-white">Tuesday Bible Study</h1>
           <div className="flex items-center gap-2">
+            <ThemeToggle size="sm" />
             {authLoading ? (
               <div className="h-8 w-20 animate-pulse rounded bg-stone-200 dark:bg-stone-700" />
             ) : isAuthenticated ? (

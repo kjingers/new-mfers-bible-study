@@ -3,7 +3,7 @@
 import { useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button, Card, CardContent, Badge, SkeletonWeekDetail } from '@/components/ui';
+import { Button, Card, CardContent, Badge, SkeletonWeekDetail, ThemeToggle } from '@/components/ui';
 import { RSVPForm } from '@/components/rsvp';
 import { MealForm } from '@/components/meal';
 import { VerseText } from '@/components/verse';
@@ -89,7 +89,7 @@ export default function WeekDetailPage({ params }: PageProps) {
           <h1 className="text-lg font-bold text-stone-900 dark:text-white">
             Week {weekData.weekNumber}
           </h1>
-          <div className="w-16" /> {/* Spacer for centering */}
+          <ThemeToggle size="sm" />
         </div>
       </header>
 

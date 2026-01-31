@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { QueryProvider } from '@/components/providers';
-import { Toaster } from '@/components/ui';
+import { Toaster, BottomNav } from '@/components/ui';
 import './globals.css';
 
 const geistSans = Geist({
@@ -40,16 +41,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-stone-50 dark:bg-stone-900`}
       >
-        <AuthProvider>
-          <QueryProvider>
-            {children}
-            <Toaster />
-          </QueryProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <QueryProvider>
+              <div className="has-bottom-nav">{children}</div>
+              <BottomNav />
+              <Toaster />
+            </QueryProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
